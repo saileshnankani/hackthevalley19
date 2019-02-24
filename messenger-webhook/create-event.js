@@ -122,10 +122,10 @@ module.exports = {
 	      if (events.length) {
 		console.log('Upcoming 10 events:');
 		events.map((event, i) => {
-		  const start = event.start.dateTime || event.start.date;
-		  //console.log(`${start} - ${event.summary}`);
-		  foundEvents += (`${start} - ${event.summary}`);
-		  console.log("The found events " + foundEvents);
+		  const start = event.start.dateTime || event.start.date;  
+		  const end = event.end.dateTime || event.end.date;
+		  console.log(`${start} - ${end} - ${event.summary}`);
+		  foundEvents += (`${start} - ${end} - ${event.summary}`);  
 		  console.log("");
 		});
 		return Promise.resolve(foundEvents);

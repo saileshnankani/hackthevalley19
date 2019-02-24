@@ -39,8 +39,7 @@ app.post('/webhook', (req, res) => {
 app.get('/', (req, res) => {
 
 	console.log('signup hit');
-	res.json({"response":"Failure"});
-	res.send(500);
+	events.list();
 });
 
 
@@ -74,7 +73,7 @@ app.get('/webhook', (req, res) => {
 
 app.post('/dialogflow', (req, res) => {
 	//console.log(req.body);
-	events.add().then(data => {  
+	events.list().then(data => {  
 		res.json({"payload": {
 				"facebook": {
 					"text": data
