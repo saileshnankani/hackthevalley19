@@ -39,7 +39,6 @@ app.post('/webhook', (req, res) => {
 app.get('/', (req, res) => {
 
 	console.log('signup hit');
-	events.list();
 });
 
 
@@ -72,23 +71,54 @@ app.get('/webhook', (req, res) => {
 });
 
 app.post('/dialogflow', (req, res) => {
-	//console.log(req.body);
-	events.list().then(data => {  
-		res.json({"payload": {
-				"slack": {
-					"text": data
-					    }
-				     }
-			});
-		res.status(200);
-	}).catch(err => {
-		console.log(err);	
-		res.json({"payload": {
-					"slack": {
-						"text": "Could not get calendar data"
-					}
-				}
-		});
-		res.status(500);
-	});	
+	console.log(req.body);
+
+
+  if(req.body.intent === "CheckCalendarPrompt") {
+    events.list().then(data => {  
+      res.json({"payload": {
+          "slack": {
+            "text": data
+                }
+               }
+        });
+      res.status(200);
+    }).catch(err => {
+      console.log(err);	
+      res.json({"payload": {
+            "slack": {
+              "text": "Could not get calendar data"
+            }
+          }
+      });
+      res.status(500);
+    });	
+  } else if(req.body.intent === "ApproveEvent") {
+    events.add(req.body.queryResult.parameters['date-time']['date_time']).then(data => {  
+      res.json({"payload": {
+          "slack": {
+            "text": data
+                }
+               }
+        });
+      res.status(200);
+    }).catch(err => {
+      console.log(err);	
+      res.json({"payload": {
+            "slack": {
+              "text": "Could not get calendar data"
+            }
+          }
+      });
+      res.status(500);
+    });	
+  } else {
+    res.json({"payload": {
+        "slack": {
+         "text": "Could not get calendar data"
+        }
+      }
+    });
+    res.status(500);
+  }
 });
