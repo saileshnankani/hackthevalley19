@@ -3,18 +3,36 @@ const readline = require('readline');
 const {google} = require('googleapis');
 const fs = require('fs');
 
+const creds = ["credentials-sid.json","credentials-ryan.json","credentials-sailesh.json","credentials-ramnik.json"]
+const tokes = ["token-sid.json","token-ryan.json","token-sailesh.json","token-ramnik.json"]
+
+//const creds = ["credentials-ramnik.json"];
+
+var timestaps = []
+
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = 'token.json';
 
 module.exports = {
 
   list() {
-    return new Promise((resolve, reject) => {  
-    // Load client secrets from a local file.
+		let clients = [];
+		let eventLists = []; 
+		Promise.all(creds.map(readCredentials)).then(data => {
+			clients = data;
+			return Promise.all(clients.map(listEvents));
+		}).then(data => {
+			eventLists = data;
+			//eventLists = getfreetimes(eventList);
+			return Promise.resolve(eventLists);
+		});
+		
+    //return new Promise((resolve, reject) => {  
+		// Load client secrets from a local file.
+		/*
 	    fs.readFile('credentials.json', (err, content) => {
 	      if (err) reject(err);
 	      // Authorize a client with credentials, then call the Google Calendar API.
@@ -22,7 +40,7 @@ module.exports = {
 	    });
     }).then(client => {
     	return listEvents(client);
-    });	    
+    });	  */  
   },
 
   add() {
@@ -40,26 +58,38 @@ module.exports = {
   }
 }	
 
+  function readCredentials(credentialsPath, tokenIndex) {
+		return new Promise((resolve, reject) => {
+			fs.readFile(credentialsPath, (err, content) => {
+				if (err) reject(err);
+				// Authorize a client with credentials, then call the Google Calendar API.
+				resolve(authorize(JSON.parse(content), tokes[tokenIndex]));
+			});
+		});
+	}
+
   /**
    * Create an OAuth2 client with the given credentials, and then execute the
    * given callback function.
    * @param {Object} credentials The authorization client credentials.
    * @param {function} callback The callback to call with the authorized client.
    */
-  function authorize(credentials) {
+  function authorize(credentials, tokenPath) {
     return new Promise((resolve, reject) => {
-	 const {client_secret, client_id, redirect_uris} = credentials.installed;
+	 	 const {client_secret, client_id, redirect_uris} = credentials.installed;
    	 const oAuth2Client = new google.auth.OAuth2(
          client_id, client_secret, redirect_uris[0]);
 	
     	// Check if we have previously stored a token.
-    	fs.readFile(TOKEN_PATH, (err, token) => {
-     		if (err) getAccessToken(oAuth2Client, callback).then(res => {
-			resolve(res);
-		});
-		else resolve(oAuth2Client);
-		oAuth2Client.setCredentials(JSON.parse(token));
-      		resolve(oAuth2Client);      
+    	fs.readFile(tokenPath, (err, token) => {
+     		if (err) getAccessToken(oAuth2Client, tokenPath).then(res => {
+									oAuth2Client.setCredentials(JSON.parse(token));
+									resolve(res);
+									});
+				else {
+					oAuth2Client.setCredentials(JSON.parse(token));
+					resolve(oAuth2Client);
+				} 
    	});
     });
   }
@@ -70,7 +100,7 @@ module.exports = {
    * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
    * @param {getEventsCallback} callback The callback for the authorized client.
    */
-  function getAccessToken(oAuth2Client) {
+  function getAccessToken(oAuth2Client, tokenPath) {
     return new Promise((resolve, reject) => { 
 	    const authUrl = oAuth2Client.generateAuthUrl({
 	      access_type: 'offline',
@@ -87,9 +117,9 @@ module.exports = {
 		if (err) reject(err);
 		oAuth2Client.setCredentials(token);
 		// Store the token to disk for later program executions
-		fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+		fs.writeFile(tokenPath, JSON.stringify(token), (err) => {
 		  if (err) reject(err);
-		  console.log('Token stored to', TOKEN_PATH);
+		  console.log('Token stored to', tokenPath);
 		});
 		resolve(oAuth2Client);
 	      });
@@ -120,13 +150,13 @@ module.exports = {
     return listCall.then((events) => {
 	    let foundEvents = "";
 	      if (events.length) {
-		console.log('Upcoming 10 events:');
+		//console.log('Upcoming 10 events:');
 		events.map((event, i) => {
 		  const start = event.start.dateTime || event.start.date;  
-		  const end = event.end.dateTime || event.end.date;
-		  console.log(`${start} - ${end} - ${event.summary}`);
-		  foundEvents += (`${start} - ${end} - ${event.summary}`);  
-		  console.log("");
+		  //console.log(`${start} - ${event.summary}`);
+			foundEvents += (`${start} - ${event.summary}`); 
+			timestaps.push(start); 
+		  console.log(timestaps[timestaps.length - 1]);
 		});
 		return Promise.resolve(foundEvents);
 	      } else {

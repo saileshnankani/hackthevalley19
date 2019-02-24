@@ -75,7 +75,7 @@ app.post('/dialogflow', (req, res) => {
 	//console.log(req.body);
 	events.list().then(data => {  
 		res.json({"payload": {
-				"facebook": {
+				"slack": {
 					"text": data
 					    }
 				     }
@@ -84,7 +84,7 @@ app.post('/dialogflow', (req, res) => {
 	}).catch(err => {
 		console.log(err);	
 		res.json({"payload": {
-					"facebook": {
+					"slack": {
 						"text": "Could not get calendar data"
 					}
 				}
