@@ -20,7 +20,7 @@ module.exports = {
   list() {
 		let clients = [];
 		let eventLists = []; 
-		Promise.all(creds.map(readCredentials)).then(data => {
+		return Promise.all(creds.map(readCredentials)).then(data => {
 			clients = data;
 			return Promise.all(clients.map(listEvents));
 		}).then(data => {
@@ -45,7 +45,7 @@ module.exports = {
 	    fs.readFile('credentials-sid.json', (err, content) => {
 	      if (err) reject(err);
 	      // Authorize a client with credentials, then call the Google Calendar API.
-	      resolve(authorize(JSON.parse(content)));
+	      resolve(authorize(JSON.parse(content),tokes[0]));
 	    });
     }).then(client => {
     	return addEvents(client, timeStampEvent);
@@ -54,6 +54,7 @@ module.exports = {
 }	
 
   function readCredentials(credentialsPath, tokenIndex) {
+	  console.log("Token index: " + tokenIndex);
 		return new Promise((resolve, reject) => {
 			fs.readFile(credentialsPath, (err, content) => {
 				if (err) reject(err);
@@ -164,14 +165,18 @@ module.exports = {
   }
 
  function addEvents(auth, dateCreate) {
-    var resources =  {
+    let dateEnd = new Date(dateCreate);
+	 dateEnd.setHours(dateEnd.getHours() + 1);
+	 let end = Date.toString();
+	console.log("End " + end);
+	 var resources =  {
         "end":
         {
-        "dateTime" : dateCreate
+        "dateTime" : "2019-02-24T17:00:00-05:00" 
         },
         "start":
         {
-        "dateTime" :dateCreate
+        "dateTime": "2019-02-24T16:00:00-05:00"
         },
 	"attendees": [
 		  {

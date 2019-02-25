@@ -74,11 +74,13 @@ app.post('/dialogflow', (req, res) => {
 	console.log(req.body);
 
 
-  if(req.body.intent === "CheckCalendarPrompt") {
-    events.list().then(data => {  
+  if(req.body.queryResult.intent.displayName === "CheckCalendarPrompt") {
+    events.list().then(data => {
+      console.log(data);
+      let output = "Free times: " + String( data);
       res.json({"payload": {
           "slack": {
-            "text": data
+            "text": output
                 }
                }
         });
@@ -93,7 +95,7 @@ app.post('/dialogflow', (req, res) => {
       });
       res.status(500);
     });	
-  } else if(req.body.intent === "ApproveEvent") {
+  } else if(req.body.queryResult.intent.displayName === "ApproveEvent") {
     events.add(req.body.queryResult.parameters['date-time']['date_time']).then(data => {  
       res.json({"payload": {
           "slack": {
